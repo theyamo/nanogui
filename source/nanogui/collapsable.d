@@ -173,7 +173,7 @@ public:
 
 		if (button == MouseButton.Left && mEnabled)
 		{
-			if (down)
+			if (down && p.y < mPos.y + fontSize)
 			{
 				mCollapsed = !mCollapsed;
 				mUpdateLayout = true;
