@@ -23,6 +23,7 @@ public:
 		mItems.length = 10_000_0;
 		foreach(i; 0..mItems.length)
 			mItems[i] = i.text;
+		mItemHeight = cast(short) mFontSize;
 	}
 
 	/// Get the label's text caption
@@ -40,6 +41,9 @@ public:
 	/// Set the label color
 	final void color(Color color) { mColor = color; }
 
+	final int itemHeight() const pure @safe nothrow { return mItemHeight; }
+	final void itemHeight(int value) { mItemHeight = cast(short) value; }
+
 	/// Set the \ref Theme used to draw this widget
 	override void theme(Theme theme)
 	{
@@ -56,7 +60,7 @@ public:
 		if (mCaption == "")
 			return Vector2i();
 		nvg.fontFace(mFont);
-		nvg.fontSize(fontSize());
+		nvg.fontSize(fontSize);
 		
 		Vector2i result = void;
 
@@ -79,10 +83,10 @@ public:
 			nvg.textAlign(algn);
 			result = Vector2i(
 				cast(int) (nvg.textBounds(0, 0, mCaption, bounds) + 2 + fontSize() * 1.5f),
-				fontSize
+				mItemHeight
 			);
 			if (!mCollapsed)
-				result.y += mItems.length * fontSize;
+				result.y += mItems.length * mItemHeight;
 		}
 
 		return result;
@@ -112,8 +116,8 @@ public:
 		algn.top = true;
 		nvg.textAlign(algn);
 		float y = mPos.y;
-		nvg.text(mPos.x + 1.25*fontSize, y, mCaption);
-		iconPos.y = y + fontSize * 0.5f;
+		nvg.text(mPos.x + 1.25*mItemHeight, y, mCaption);
+		iconPos.y = y + mItemHeight * 0.5f;
 
 		// draw items if not collapsed
 		if (!mCollapsed)
@@ -122,25 +126,25 @@ public:
 
 			foreach(item; mItems)
 			{
-				y += fontSize * 1.0f;
+				y += mItemHeight * 1.0f;
 				if (y > screen.height)
 					break;
 
 				auto mouse = screen.mousePos - parent.absolutePosition;
-				if (mouse_over && mouse.y > y && mouse.y < y + fontSize)
+				if (mouse_over && mouse.y > y && mouse.y < y + mItemHeight)
 				{
-					auto paint = nvg.boxGradient(mPos.x, y, mSize.x, y + fontSize, 
+					auto paint = nvg.boxGradient(mPos.x, y, mSize.x, y + mItemHeight, 
 						2, 4, Color(0, 0, 220, 25), Color(0, 0, 128, 25));
 
 					nvg.beginPath;
-					nvg.roundedRect(mPos.x, y, mSize.x, fontSize, 2);
+					nvg.roundedRect(mPos.x, y, mSize.x, mItemHeight, 2);
 
 					nvg.fillPaint = paint;
 					// now fill our rect
 					nvg.fill();
 				}
 				nvg.fillColor(mColor);
-				nvg.text(mPos.x + 2.5*fontSize, y, item);
+				nvg.text(mPos.x + 2.5*mItemHeight, y, item);
 			}
 		}
 
@@ -173,7 +177,7 @@ public:
 
 		if (button == MouseButton.Left && mEnabled)
 		{
-			if (down && p.y < mPos.y + fontSize)
+			if (down && p.y < mPos.y + mItemHeight)
 			{
 				mCollapsed = !mCollapsed;
 				mUpdateLayout = true;
@@ -192,7 +196,8 @@ protected:
 	string mFont;
 	Color mColor;
 	bool mCollapsed;
-    bool mUpdateLayout;
+	bool mUpdateLayout;
 
 	string[] mItems;
+	short mItemHeight;
 }
