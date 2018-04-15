@@ -149,6 +149,23 @@ void main () {
 			}
 		}
 
+		{
+			auto window = new Window(screen, "Collapsable");
+			window.position(Vector2i(600, 15));
+			window.layout(new GroupLayout());
+
+			import nanogui.collapsable;
+			auto collapsable = new Collapsable(window, "Collapsable #1", "sans-bold");
+			collapsable.fixedSize = Vector2i(110, 50);
+			collapsable = new Collapsable(window, "Collapsable #2", "sans-bold");
+			collapsable = new Collapsable(window, "Collapsable #3", "sans-bold");
+			new Label(collapsable, "One");
+			new Label(collapsable, "Two");
+			new Label(collapsable, "Three");
+
+			window.tooltip = "Test for Collapsable widget";
+		}
+
 		// now we should do layout manually yet
 		screen.performLayout(nvg);
 	};
