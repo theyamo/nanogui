@@ -22,7 +22,8 @@ void main () {
 	import nanogui.nanogui : Screen;
 	import nanogui.widget, nanogui.theme, nanogui.checkbox, nanogui.label, 
 		nanogui.common, nanogui.window, nanogui.layout, nanogui.button,
-		nanogui.popupbutton, nanogui.entypo, nanogui.popup, nanogui.vscrollpanel;
+		nanogui.popupbutton, nanogui.entypo, nanogui.popup, nanogui.vscrollpanel,
+		nanogui.collapsable;
 
 	Screen screen;
 
@@ -119,7 +120,7 @@ void main () {
 			new Label(window, "Message dialog", "sans-bold");
 			new CheckBox(window, "Checkbox #4", (bool value){ });
 
-	        window.tooltip = "Window with checkbox FOUR tooltip";
+			window.tooltip = "Window with checkbox FOUR tooltip";
 		}
 
 		{
@@ -154,14 +155,44 @@ void main () {
 			window.position(Vector2i(600, 15));
 			window.layout(new GroupLayout());
 
-			import nanogui.collapsable;
 			auto collapsable = new Collapsable(window, "Collapsable #1", "sans-bold");
 			collapsable.fixedSize = Vector2i(110, 50);
 			collapsable = new Collapsable(window, "Collapsable #2", "sans-bold");
+			collapsable.itemHeight = 25;
 			collapsable = new Collapsable(window, "Collapsable #3", "sans-bold");
-			new Label(collapsable, "One");
-			new Label(collapsable, "Two");
-			new Label(collapsable, "Three");
+
+			window.tooltip = "Test for Collapsable widget";
+		}
+
+		{
+			int width      = 400;
+			int half_width = width / 2;
+			int height     = 200;
+
+			auto window = new Window(screen, "Collapsable test");
+			window.position(Vector2i(500, 400));
+			window.fixedSize(Vector2i(width, height));
+
+			// attach a vertical scroll panel
+			auto vscroll = new VScrollPanel(window);
+			// vscroll.fixedSize(Vector2i(width, height));
+
+			auto collapsable = new Collapsable(vscroll, "Collapsable #4");
+			collapsable.fixedSize(Vector2i(width, height));
+			// collapsable.layout(new GridLayout());// defaults: 2 columns
+		}	
+
+		{
+			auto window = new Window(screen, "Collapsable");
+			window.position(Vector2i(800, 15));
+			window.fixedSize = Vector2i(300, 600);
+			window.layout(new GroupLayout());
+
+			auto collapsable = new Collapsable(window, "Collapsable #1", "sans-bold");
+			collapsable.fixedSize = Vector2i(110, 50);
+			collapsable = new Collapsable(window, "Collapsable #2", "sans-bold");
+			collapsable.itemHeight = 25;
+			collapsable = new Collapsable(window, "Collapsable #3", "sans-bold");
 
 			window.tooltip = "Test for Collapsable widget";
 		}

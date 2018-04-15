@@ -82,7 +82,7 @@ public:
 			algn.middle = true;
 			nvg.textAlign(algn);
 			result = Vector2i(
-				cast(int) (nvg.textBounds(0, 0, mCaption, bounds) + 2 + fontSize() * 1.5f),
+				cast(int) (nvg.textBounds(0, 0, mCaption, bounds) + 2 + mItemHeight * 1.5f),
 				mItemHeight
 			);
 			if (!mCollapsed)
@@ -115,9 +115,9 @@ public:
 		algn.left = true;
 		algn.top = true;
 		nvg.textAlign(algn);
-		float y = mPos.y;
-		nvg.text(mPos.x + 1.25*mItemHeight, y, mCaption);
-		iconPos.y = y + mItemHeight * 0.5f;
+		float y = mPos.y + (mItemHeight - fontSize)/2;
+		nvg.text(mPos.x + mItemHeight, y, mCaption);
+		iconPos.y = mPos.y + mItemHeight * 0.5f;
 
 		// draw items if not collapsed
 		if (!mCollapsed)
@@ -126,7 +126,7 @@ public:
 
 			foreach(item; mItems)
 			{
-				y += mItemHeight * 1.0f;
+				y += mItemHeight;
 				if (y > screen.height)
 					break;
 
@@ -144,7 +144,7 @@ public:
 					nvg.fill();
 				}
 				nvg.fillColor(mColor);
-				nvg.text(mPos.x + 2.5*mItemHeight, y, item);
+				nvg.text(mPos.x + mItemHeight, y, item);
 			}
 		}
 
