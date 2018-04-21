@@ -96,7 +96,10 @@ public:
 	override void draw(NVGContext nvg)
 	{
 		if (mUpdateLayout)
+		{
 			screen.performLayout(nvg);
+			mUpdateLayout = false;
+		}
 
 		Widget.draw(nvg);
 
