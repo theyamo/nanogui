@@ -163,6 +163,10 @@ public:
 			}
 			return true;
 		}
+		if (mResize && (button & (1 << MouseButton.Left)) != 0) {
+			mSize += rel;
+			return true;
+		}
 		return false;
 	}
 	/// Handle mouse events recursively and bring the current window to the top
@@ -173,6 +177,7 @@ public:
 		if (button == MouseButton.Left)
 		{
 			mDrag = down && (p.y - mPos.y) < mTheme.mWindowHeaderHeight;
+			mResize = down && (p.y - mPos.y) > (mSize.y - mTheme.mWindowHeaderHeight) && (p.x - mPos.x)>mSize.x*3/4;
 			return true;
 		}
 		return false;
@@ -228,4 +233,5 @@ protected:
 	Widget mButtonPanel;
 	bool mModal;
 	bool mDrag;
+	bool mResize;
 }
