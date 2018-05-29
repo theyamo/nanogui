@@ -18,6 +18,7 @@ module nanogui.textbox;
 import std.array : replaceInPlace;
 import std.algorithm : swap;
 import std.math : abs;
+import std.traits : isIntegral;
 
 import arsd.nanovega;
 import nanogui.widget : Widget;
@@ -857,118 +858,132 @@ protected:
 	double mLastClick;
 }
 
-// /**
-//  * \class IntBox textbox.h nanogui/textbox.h
-//  *
-//  * \brief A specialization of TextBox for representing integral values.
-//  *
-//  * Template parameters should be integral types, e.g. `int`, `long`,
-//  * `uint32_t`, etc.
-//  */
-// template <typename Scalar>
-// class IntBox : public TextBox {
-// public:
-// 	IntBox(Widget *parent, Scalar value = (Scalar) 0) : TextBox(parent) {
-// 		setDefaultValue("0");
-// 		setFormat(std::is_signed<Scalar>::value ? "[-]?[0-9]*" : "[0-9]*");
-// 		setValueIncrement(1);
-// 		setMinMaxValues(std::numeric_limits<Scalar>::lowest(), std::numeric_limits<Scalar>::max());
-// 		setValue(value);
-// 		setSpinnable(false);
-// 	}
+/**
+ * A specialization of TextBox for representing integral values.
+ *
+ * Template parameters should be integral types, e.g. `int`, `long`, etc.
+ */
+class IntBox(Scalar) :  TextBox if (isIntegral!Scalar)
+{
+    import std.conv : to;
 
-// 	Scalar value() const {
-// 		std::istringstream iss(TextBox::value());
-// 		Scalar value = 0;
-// 		iss >> value;
-// 		return value;
-// 	}
+public:
+	this(Widget parent, Scalar val = cast(Scalar) 0)
+    {
+        super(parent);
+		defaultValue = "0";
+        import std.traits : isSigned;
+		format(isSigned!Scalar ? "[-]?[0-9]*" : "[0-9]*");
+		valueIncrement = 1;
+		minMaxValues(Scalar.min, Scalar.max);
+		value = val;
+		spinnable = false;
+	}
 
-// 	void setValue(Scalar value) {
-// 		Scalar clampedValue = std::min(std::max(value, mMinValue),mMaxValue);
-// 		TextBox::setValue(std::to_string(clampedValue));
-// 	}
+	final Scalar value() const
+    {
+		return super.value.to!Scalar;
+	}
 
-// 	void setCallback(const std::function<void(Scalar)> &cb) {
-// 		TextBox::setCallback(
-// 			[cb, this](const string &str) {
-// 				std::istringstream iss(str);
-// 				Scalar value = 0;
-// 				iss >> value;
-// 				setValue(value);
-// 				cb(value);
-// 				return true;
-// 			}
-// 		);
-// 	}
+	final void value(Scalar value)
+    {
+        import std.algorithm : min, max;
+		Scalar clampedValue = min(max(value, mMinValue),mMaxValue);
+		super.value(clampedValue.to!string);
+	}
 
-// 	void setValueIncrement(Scalar incr) {
-// 		mValueIncrement = incr;
-// 	}
-// 	void setMinValue(Scalar minValue) {
-// 		mMinValue = minValue;
-// 	}
-// 	void setMaxValue(Scalar maxValue) {
-// 		mMaxValue = maxValue;
-// 	}
-// 	void setMinMaxValues(Scalar minValue, Scalar maxValue) {
-// 		setMinValue(minValue);
-// 		setMaxValue(maxValue);
-// 	}
+	void callback(void delegate (Scalar) cb)
+    {
+		super.callback(
+			delegate(string str)
+            {
+				value = str.to!Scalar;
+				cb(value);
+				return true;
+			}
+		);
+	}
 
-// 	virtual bool mouseButtonEvent(Vector2i p, int button, bool down, int modifiers) override {
-// 		if ((mEditable || mSpinnable) && down)
-// 			mMouseDownValue = value();
+	final void valueIncrement(Scalar incr)
+    {
+		mValueIncrement = incr;
+	}
+	final void minValue(Scalar minValue)
+    {
+		mMinValue = minValue;
+	}
+	final void maxValue(Scalar maxValue)
+    {
+		mMaxValue = maxValue;
+	}
+	final void minMaxValues(Scalar min_value, Scalar max_value)
+    {
+		minValue = min_value;
+		maxValue = max_value;
+	}
 
-// 		SpinArea area = spinArea(p);
-// 		if (mSpinnable && area != SpinArea.None && down && !focused()) {
-// 			if (area == SpinArea.Top) {
-// 				setValue(value() + mValueIncrement);
-// 				if (mCallback)
-// 					mCallback(mValue);
-// 			} else if (area == SpinArea.Bottom) {
-// 				setValue(value() - mValueIncrement);
-// 				if (mCallback)
-// 					mCallback(mValue);
-// 			}
-// 			return true;
-// 		}
+    override bool mouseButtonEvent(Vector2i p, MouseButton button, bool down, int modifiers)
+    {
+		if ((mEditable || mSpinnable) && down)
+			mMouseDownValue = value();
 
-// 		return TextBox::mouseButtonEvent(p, button, down, modifiers);
-// 	}
-// 	virtual bool mouseDragEvent(Vector2i p, Vector2i rel, int button, int modifiers) override {
-// 		if (TextBox::mouseDragEvent(p, rel, button, modifiers)) {
-// 			return true;
-// 		}
-// 		if (mSpinnable && !focused() && button == 2 /* 1 << GLFW_MOUSE_BUTTON_2 */ && mMouseDownPos.x != -1) {
-// 				int valueDelta = static_cast<int>((p.x - mMouseDownPos.x) / float(10));
-// 				setValue(mMouseDownValue + valueDelta * mValueIncrement);
-// 				if (mCallback)
-// 					mCallback(mValue);
-// 				return true;
-// 		}
-// 		return false;
-// 	}
-// 	virtual bool scrollEvent(Vector2i p, const Vector2f &rel) override {
-// 		if (Widget::scrollEvent(p, rel)) {
-// 			return true;
-// 		}
-// 		if (mSpinnable && !focused()) {
-// 			  int valueDelta = (rel.y > 0) ? 1 : -1;
-// 			  setValue(value() + valueDelta*mValueIncrement);
-// 			  if (mCallback)
-// 				  mCallback(mValue);
-// 			  return true;
-// 		}
-// 		return false;
-// 	}
-// private:
-// 	Scalar mMouseDownValue;
-// 	Scalar mValueIncrement;
-// 	Scalar mMinValue, mMaxValue;
-// public:
-// 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-// };
+		SpinArea area = spinArea(p);
+		if (mSpinnable && area != SpinArea.None && down && !focused)
+        {
+			if (area == SpinArea.Top)
+            {
+				value = value + mValueIncrement;
+				if (mCallback)
+					mCallback(mValue);
+			}
+            else if (area == SpinArea.Bottom)
+            {
+				value = value - mValueIncrement;
+				if (mCallback)
+					mCallback(mValue);
+			}
+			return true;
+		}
+
+		return super.mouseButtonEvent(p, button, down, modifiers);
+	}
+
+	override bool mouseDragEvent(Vector2i p, Vector2i rel, MouseButton button, int modifiers) 
+    {
+		if (super.mouseDragEvent(p, rel, button, modifiers))
+			return true;
+        
+		if (mSpinnable && !focused && button == MouseButton.Left && mMouseDownPos.x != -1)
+        {
+				int valueDelta = cast(int)((p.x - mMouseDownPos.x) / float(10));
+				value = mMouseDownValue + valueDelta * mValueIncrement;
+				if (mCallback)
+					mCallback(mValue);
+				return true;
+		}
+		return false;
+	}
+
+	override bool scrollEvent(Vector2i p, Vector2f rel)
+    {
+		if (super.scrollEvent(p, rel))
+			return true;
+		
+		if (mSpinnable && !focused)
+        {
+		    const valueDelta = (rel.y > 0) ? 1 : -1;
+			value = value + valueDelta*mValueIncrement;
+			if (mCallback)
+			    mCallback(mValue);
+			return true;
+		}
+		return false;
+	}
+private:
+	Scalar mMouseDownValue;
+	Scalar mValueIncrement;
+	Scalar mMinValue, mMaxValue;
+}
 
 // /**
 //  * \class FloatBox textbox.h nanogui/textbox.h

@@ -114,6 +114,18 @@ class MyGui : SdlBackend
 			cb.tooltip = "This widget has custom cursor value - Cursor.Hand";
 
 			window.tooltip = "Window with ComboBox tooltip";
+
+			auto intBox = new IntBox!int(window);
+            intBox.editable(true);
+            intBox.fixedSize(Vector2i(100, 20));
+            intBox.value(50);
+            intBox.units("Mhz");
+            intBox.defaultValue("0");
+            intBox.fontSize(16);
+            intBox.format("[1-9][0-9]*");
+            intBox.spinnable(true);
+            intBox.minValue(1);
+            intBox.valueIncrement(2);
 		}
 
 		{
